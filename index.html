@@ -303,16 +303,6 @@
   @media (max-width: 700px) {
     .liq-grid { grid-template-columns: 1fr; }
     .stats-bar { grid-template-columns: 1fr 1fr; }
-    main { padding: 16px 12px 60px; }
-    .card { padding: 16px; }
-    .farm-actions { flex-wrap: wrap; }
-    .farm-actions .btn-secondary { min-width: calc(50% - 5px); }
-    .swap-input { font-size: 22px; }
-  }
-  @media (max-width: 480px) {
-    .portfolio-grid { grid-template-columns: 1fr; }
-    nav button { padding: 6px 8px; font-size: 12px; letter-spacing: 0; }
-    .wallet-btn { padding: 8px 12px; font-size: 13px; }
   }
 
   .tab-row {
@@ -541,10 +531,8 @@
   .modal-overlay.open { display: flex; }
   .modal {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 20px; padding: 24px;
+    border-radius: 20px; padding: 28px;
     width: 100%; max-width: 420px; margin: 16px;
-    max-height: 90vh; overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
   .modal-title {
     font-family: 'Bebas Neue', sans-serif; font-size: 22px;
@@ -903,14 +891,11 @@
 
           <label class="input-label">Token A</label>
           <div class="input-wrap" style="margin-bottom:4px">
-            <input class="input-field" id="liqA" type="number" placeholder="0.0" oninput="calcLiqRatio()" style="padding-right:155px" />
-            <select class="token-select" id="liqTokenA" onchange="calcLiqRatio();updateBalanceDisplays();updateLiqPriceCards();if(state.provider)calcLiqRatioOnChain()" style="position:absolute;right:0;top:50%;transform:translateY(-50%);border:none;width:auto">
+            <input class="input-field" id="liqA" type="number" placeholder="0.0" oninput="calcLiqRatio()" />
+            <select class="token-select" id="liqTokenA" onchange="calcLiqRatio();updateBalanceDisplays();updateLiqPriceCards()" style="position:absolute;right:0;top:50%;transform:translateY(-50%);border:none;width:auto">
               <option value="CRO">🔴 CRO</option>
               <option value="GANG">🔫 GANG</option>
               <option value="USDC">💵 USDC</option>
-              <option value="USDT">💰 USDT</option>
-              <option value="WBTC">₿ WBTC</option>
-              <option value="WETH">💎 WETH</option>
             </select>
             <span class="input-max" style="right:100px" onclick="setMax('liqA')">MAX</span>
           </div>
@@ -923,14 +908,11 @@
 
           <label class="input-label">Token B <span style="color:var(--muted);font-size:11px;font-weight:400">(auto-calculated)</span></label>
           <div class="input-wrap" style="margin-bottom:4px">
-            <input class="input-field" id="liqB" type="number" placeholder="0.0" oninput="calcLiqRatioFromB()" style="padding-right:155px" />
-            <select class="token-select" id="liqTokenB" onchange="calcLiqRatio();updateBalanceDisplays();updateLiqPriceCards();if(state.provider)calcLiqRatioOnChain()" style="position:absolute;right:0;top:50%;transform:translateY(-50%);border:none;width:auto">
+            <input class="input-field" id="liqB" type="number" placeholder="0.0" readonly style="opacity:0.8;cursor:not-allowed" />
+            <select class="token-select" id="liqTokenB" onchange="calcLiqRatio();updateBalanceDisplays();updateLiqPriceCards()" style="position:absolute;right:0;top:50%;transform:translateY(-50%);border:none;width:auto">
               <option value="GANG">🔫 GANG</option>
               <option value="CRO">🔴 CRO</option>
               <option value="USDC">💵 USDC</option>
-              <option value="USDT">💰 USDT</option>
-              <option value="WBTC">₿ WBTC</option>
-              <option value="WETH">💎 WETH</option>
             </select>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -945,7 +927,7 @@
             <div class="info-row" style="margin-top:6px"><span>LP Tokens</span><span class="info-val" id="liqLP">—</span></div>
           </div>
 
-          <button class="btn-primary" onclick="reviewAddLiquidity()">✅ REVIEW ADD LIQUIDITY</button>
+          <button class="btn-primary" onclick="doAddLiquidity()">✅ CONFIRM ADD LIQUIDITY</button>
         </div>
 
         <div id="liq-remove" style="display:none">
@@ -954,7 +936,7 @@
             <input class="input-field" id="removeLPAmt" type="number" placeholder="0.0" oninput="calcRemoveLiq()" />
             <span class="input-max" onclick="setMax('removeLPAmt')">MAX</span>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:11px;color:var(--muted)">Your LP Balance:</span><span style="font-size:12px;color:var(--gold);font-family:'Space Mono',monospace;font-weight:700" id="lpBalance">—</span></div>
+          <div class="input-balance" id="lpBalance">LP Balance: —</div>
 
           <div style="margin:16px 0">
             <input type="range" id="removeSlider" min="0" max="100" value="0" class="liq-slider" oninput="setRemovePercent(this.value)" style="width:100%;accent-color:var(--gold)" />
@@ -965,11 +947,11 @@
 
           <div class="swap-info" style="display:flex">
             <div class="info-row"><span>You'll receive</span></div>
-            <div class="info-row" style="margin-top:4px"><span id="removeSymA">CRO</span><span class="info-val" id="removeA">—</span></div>
-            <div class="info-row" style="margin-top:4px"><span id="removeSymB">GANG</span><span class="info-val" id="removeB">—</span></div>
+            <div class="info-row" style="margin-top:4px"><span>Token A</span><span class="info-val" id="removeA">—</span></div>
+            <div class="info-row"><span>Token B</span><span class="info-val" id="removeB">—</span></div>
           </div>
 
-          <button class="btn-primary" onclick="reviewRemoveLiquidity()">REVIEW REMOVE LIQUIDITY</button>
+          <button class="btn-primary" onclick="doRemoveLiquidity()">REMOVE LIQUIDITY</button>
         </div>
       </div>
 
@@ -1324,50 +1306,6 @@
   </div>
 </div>
 
-<!-- ── Harvest Confirm Modal ── -->
-<div class="modal-overlay" id="harvestConfirmModal">
-  <div class="modal" style="max-width:420px">
-    <div class="modal-title">
-      <span>🌾 Confirm Harvest</span>
-      <button class="modal-close" onclick="closeHarvestConfirmModal()">✕</button>
-    </div>
-    <div style="text-align:center;padding:12px 0 20px">
-      <div style="font-size:48px;margin-bottom:10px">🔫</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--gold)" id="harvestConfirmAmt">0.0000</div>
-      <div style="font-size:16px;color:var(--muted);margin-top:4px">$GANG tokens to claim</div>
-    </div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px">
-      <div class="confirm-row">
-        <span class="confirm-row-label">Farm</span>
-        <span class="confirm-row-val" id="harvestConfirmFarm">—</span>
-      </div>
-      <div class="confirm-row">
-        <span class="confirm-row-label">Reward Token</span>
-        <span class="confirm-row-val">🔫 $GANG</span>
-      </div>
-      <div class="confirm-row">
-        <span class="confirm-row-label">Est. USD Value</span>
-        <span class="confirm-row-val" id="harvestConfirmUSD">—</span>
-      </div>
-    </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">
-      ⚠️ Your wallet will ask you to confirm this transaction. Gas fees apply.
-    </div>
-    <button class="btn-primary" onclick="doHarvest()">✅ CONFIRM HARVEST</button>
-  </div>
-</div>
-
-<!-- ── Liquidity Confirm Modal ── -->
-<div class="modal-overlay" id="liqConfirmModal">
-  <div class="modal" style="max-width:460px">
-    <div class="modal-title">
-      <span id="liqConfirmTitle">Confirm Liquidity</span>
-      <button class="modal-close" onclick="closeLiqConfirmModal()">✕</button>
-    </div>
-    <div id="liqConfirmBody"><!-- injected by JS --></div>
-  </div>
-</div>
-
 <!-- ── Wallet Connect Modal ── -->
 <div class="modal-overlay" id="walletModal">
   <div class="modal" style="max-width:400px">
@@ -1528,18 +1466,7 @@ let state = {
 
 const CRONOS_CHAIN_ID = 25;
 
-// ── Read-only public RPC provider (for prices/ratios before wallet connect) ──
-const CRONOS_PUBLIC_RPC = "https://evm.cronos.org";
-let _publicProvider = null;
-function getReadProvider() {
-  // Return wallet provider if connected, else a read-only public RPC
-  if (state.provider) return state.provider;
-  if (!_publicProvider) {
-    try { _publicProvider = new ethers.JsonRpcProvider(CRONOS_PUBLIC_RPC, { chainId: 25, name: "cronos" }); }
-    catch(e) { return null; }
-  }
-  return _publicProvider;
-}
+
 
 // ══════════════════════════════════════════════════════════════
 // WALLET — Multi-wallet support
@@ -1674,11 +1601,7 @@ function openWalletPickerModal() {
       </div>
     </button>`);
 
-  body.innerHTML = sections.join("") + `
-    <div style="background:rgba(212,160,23,0.06);border:1px solid rgba(212,160,23,0.2);border-radius:10px;padding:12px 14px;margin-top:16px;font-size:12px;color:var(--muted);line-height:1.6">
-      🔐 <strong style="color:var(--text)">Your wallet will ask for permission before connecting.</strong>
-      We never have access to your funds. Only approve connection requests from <span style="color:var(--gold)">cronos-gangsters.app</span>.
-    </div>`;
+  body.innerHTML = sections.join("");
   document.getElementById("walletModal").classList.add("open");
 }
 
@@ -1707,16 +1630,14 @@ async function connectEIP6963(uuid) {
   const detail = _eip6963Providers.find(p => p.info.uuid === uuid);
   if (!detail) { showToast("Wallet not found.", "error"); return; }
   closeWalletModal();
-  try { await _connectProvider(detail.provider, detail.info.name); }
-  catch(e) { showToast("❌ " + (e?.message || "Connection failed").slice(0,80), "error"); }
+  await _connectProvider(detail.provider, detail.info.name);
 }
 
 // ── Connect via legacy window.ethereum ───────────────────────
 async function connectWindowEthereum() {
   if (!window.ethereum) { showToast("No browser wallet detected.", "error"); return; }
   closeWalletModal();
-  try { await _connectProvider(window.ethereum, "Browser Wallet"); }
-  catch(e) { showToast("❌ " + (e?.message || "Connection failed").slice(0,80), "error"); }
+  await _connectProvider(window.ethereum, "Browser Wallet");
 }
 
 // ── WalletConnect v2 (QR modal) ───────────────────────────────
@@ -1884,129 +1805,43 @@ async function loadBalances() {
       } catch(e) { console.warn("Chef load failed:", e); }
     }
 
-    // Load LP token wallet balances per farm
-    // Auto-discover lpAddr from VVS Factory if not set
+    // Load LP token wallet balances per farm (if lpAddr known)
     if (!state.lpBalances) state.lpBalances = {};
-    const factory = CONTRACTS.FACTORY ? new ethers.Contract(CONTRACTS.FACTORY, FACTORY_ABI, state.provider) : null;
     for (const farm of FARMS) {
-      try {
-        // Resolve LP address — use configured one or query factory
-        let lpAddr = farm.lpAddr;
-        if (!lpAddr && factory && farm.tokens.length >= 2) {
-          const tA = TOKENS[farm.tokens[0]];
-          const tB = TOKENS[farm.tokens[1]];
-          if (tA && tB) {
-            const addrA = tA.address === "native" ? CONTRACTS.WCRO : tA.address;
-            const addrB = tB.address === "native" ? CONTRACTS.WCRO : tB.address;
-            try {
-              lpAddr = await factory.getPair(addrA, addrB);
-              if (lpAddr && lpAddr !== "0x0000000000000000000000000000000000000000") {
-                farm.lpAddr = lpAddr; // cache it so future calls are instant
-              } else {
-                lpAddr = null;
-              }
-            } catch { lpAddr = null; }
-          }
-        }
-        if (lpAddr && lpAddr !== "native" && lpAddr !== "0x0000000000000000000000000000000000000000") {
-          const lp = new ethers.Contract(lpAddr, ERC20_ABI, state.provider);
+      if (farm.lpAddr && farm.lpAddr !== "native") {
+        try {
+          const lp = new ethers.Contract(farm.lpAddr, ERC20_ABI, state.provider);
           const bal = await lp.balanceOf(state.address);
           state.lpBalances[farm.pid] = parseFloat(ethers.formatUnits(bal, 18));
-        } else if (!lpAddr) {
-          // No pair exists yet — balance stays 0
-          state.lpBalances[farm.pid] = state.lpBalances[farm.pid] || 0;
-        }
-      } catch { state.lpBalances[farm.pid] = 0; }
+        } catch { state.lpBalances[farm.pid] = 0; }
+      }
     }
 
     updateBalanceDisplays();
-    // Refresh liq page if visible
-    if (document.getElementById("page-liquidity")?.classList.contains("active")) {
-      updateBalanceDisplays();
-    }
   } catch (e) { console.error("loadBalances:", e); }
 }
 
 function updateBalanceDisplays() {
-  const symA = document.getElementById("liqTokenA")?.value || "CRO";
-  const symB = document.getElementById("liqTokenB")?.value || "GANG";
-
-  const fmtBal = (sym) => {
-    const b = state.balances[sym];
-    if (b === undefined || b === null) return null;
-    const fmt = b >= 1000 ? b.toLocaleString("en-US", {maximumFractionDigits: 4})
-              : b >= 0.0001 ? b.toFixed(6)
-              : b.toFixed(8);
-    return fmt + " " + sym;
-  };
-
+  const fmt = (sym) => state.balances[sym] !== undefined
+    ? `Balance: ${state.balances[sym].toFixed(4)} ${sym}`
+    : "Balance: —";
   const balA = document.getElementById("balA");
   const balB = document.getElementById("balB");
-  const bA = fmtBal(symA);
-  const bB = fmtBal(symB);
-
-  if (balA) {
-    if (bA !== null) {
-      balA.innerHTML = `<span style="cursor:pointer;color:var(--gold)" onclick="setMax('liqA')" title="Click to fill MAX">Balance: ${bA} <span style="font-size:10px;opacity:0.7">MAX</span></span>`;
-    } else if (state.address) {
-      balA.textContent = "Balance: loading…";
-    } else {
-      balA.textContent = "Balance: —";
-    }
-  }
-
-  if (balB) {
-    if (bB !== null) {
-      balB.innerHTML = `<span style="cursor:pointer;color:var(--gold)" onclick="setMaxLiqB()" title="Click to fill MAX">Balance: ${bB} <span style="font-size:10px;opacity:0.7">MAX</span></span>`;
-    } else if (state.address) {
-      balB.textContent = "Balance: loading…";
-    } else {
-      balB.textContent = "Balance: —";
-    }
-  }
-
-  // LP balance on remove tab
-  const lpEl = document.getElementById("lpBalance");
-  if (lpEl) {
-    const matchFarm = FARMS.find(f => f.tokens.includes(symA) && f.tokens.includes(symB));
-    const totalLP = matchFarm ? (state.lpBalances?.[matchFarm.pid] || 0) : 0;
-    lpEl.textContent = "LP Balance: " + totalLP.toFixed(6);
-  }
-
+  if (balA) balA.textContent = fmt(document.getElementById("liqTokenA")?.value || "CRO");
+  if (balB) balB.textContent = fmt(document.getElementById("liqTokenB")?.value || "GANG");
   updateSwapBalances();
 }
 
-function setMaxLiqB() {
-  const symB = document.getElementById("liqTokenB")?.value || "GANG";
-  const b = state.balances[symB];
-  if (b !== undefined) {
-    document.getElementById("liqB").value = b.toFixed(6);
-    calcLiqRatioFromB();
-  }
-}
-
 function updateSwapBalances() {
+  const fmt = (sym) => state.balances[sym] !== undefined
+    ? `Balance: ${state.balances[sym].toFixed(4)} ${sym}`
+    : "Balance: —";
   const fromSym = document.getElementById("tokenFrom")?.value || "CRO";
   const toSym   = document.getElementById("tokenTo")?.value   || "GANG";
   const elFrom  = document.getElementById("swapFromBalance");
   const elTo    = document.getElementById("swapToBalance");
-
-  const fmtBal = (sym) => {
-    const b = state.balances[sym];
-    if (b === undefined || b === null) return state.address ? "Balance: loading…" : "Balance: —";
-    const fmt = b >= 1000 ? b.toLocaleString("en-US",{maximumFractionDigits:4}) : b >= 0.0001 ? b.toFixed(6) : b.toFixed(8);
-    return "Balance: " + fmt + " " + sym;
-  };
-
-  if (elFrom) {
-    const b = state.balances[fromSym];
-    if (b !== undefined) {
-      elFrom.innerHTML = `<span style="cursor:pointer;color:var(--gold)" onclick="setMax('swapFrom')" title="Click to fill MAX">${fmtBal(fromSym)} <span style="font-size:10px;opacity:0.7">MAX</span></span>`;
-    } else {
-      elFrom.textContent = fmtBal(fromSym);
-    }
-  }
-  if (elTo) elTo.textContent = fmtBal(toSym);
+  if (elFrom) elFrom.textContent = fmt(fromSym);
+  if (elTo)   elTo.textContent   = fmt(toSym);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2020,8 +1855,6 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
     document.getElementById("page-" + btn.dataset.page).classList.add("active");
     if (btn.dataset.page === "farms") renderFarms();
     if (btn.dataset.page === "portfolio") renderPortfolio();
-    if (btn.dataset.page === "liquidity") { updateBalanceDisplays(); if (state.provider) calcLiqRatioOnChain(); }
-    if (btn.dataset.page === "swap") updateSwapBalances();
   });
 });
 
@@ -2079,7 +1912,7 @@ async function calcSwap() {
       outAmt = (usdValue * (1 - 0.003)) / toPrice;
     }
   } else {
-    // ── Fallback: calculate from live CoinGecko prices when Router call not available ──
+    // ── Mock mode: calculate from live CoinGecko prices ──
     const usdValue = fromAmt * fromPrice;
     fee    = usdValue * 0.003;
     impact = Math.min(usdValue / 50000 * 100, 15);
@@ -2147,7 +1980,20 @@ async function doSwap() {
   btn.innerHTML = '<span class="spinner"></span>Swapping…';
   btn.disabled = true;
 
-  if (!CONTRACTS.ROUTER) { showToast("❌ Router contract not configured.", "error"); btn.innerHTML = "SWAP"; btn.disabled = false; return; }
+  // ── Mock mode: Router not yet deployed ──
+  if (!CONTRACTS.ROUTER) {
+    showToast("⏳ Processing swap…", "");
+    await simulateTx(1800);
+    const mockHash = "0x" + Math.random().toString(16).slice(2, 14);
+    // Track protocol fee earned (0.05% of swap value in USD)
+    const swapUSD = fromAmt * (TOKENS[fromSym]?.price || 1);
+    const protocolFeeUSD = swapUSD * (TREASURY.protocolFee / 100);
+    state.treasuryEarned = (state.treasuryEarned || 0) + protocolFeeUSD;
+    addTx("Swap", `${fromAmt} ${fromSym} → ${toAmt.toFixed(4)} ${toSym}`, mockHash, "ok");
+    showToast(`✅ Swapped ${fromAmt} ${fromSym} for ~${toAmt.toFixed(4)} ${toSym}`, "success");
+    btn.innerHTML = "SWAP"; btn.disabled = false;
+    return;
+  }
 
   try {
     const fromToken = TOKENS[fromSym];
@@ -2292,138 +2138,38 @@ function updateLiqPriceCards() {
   }
 }
 
-// ── On-chain GANG price via VVS CRO/GANG reserves ────────────
-const PAIR_ABI = [
-  "function getReserves() view returns(uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)",
-  "function token0() view returns(address)",
-];
-
-async function fetchGangPriceOnChain() {
-  try {
-    const _rp = getReadProvider();
-    if (!_rp || !CONTRACTS.FACTORY) return;
-    const factory = new ethers.Contract(CONTRACTS.FACTORY, FACTORY_ABI, _rp);
-    const pairAddr = await factory.getPair(CONTRACTS.WCRO, CONTRACTS.GANG);
-    if (!pairAddr || pairAddr === "0x0000000000000000000000000000000000000000") return;
-    const pair = new ethers.Contract(pairAddr, PAIR_ABI, _rp);
-    const [token0, reserves] = await Promise.all([pair.token0(), pair.getReserves()]);
-    const isCROtoken0 = token0.toLowerCase() === CONTRACTS.WCRO.toLowerCase();
-    const reserveCRO  = isCROtoken0 ? reserves[0] : reserves[1];
-    const reserveGANG = isCROtoken0 ? reserves[1] : reserves[0];
-    if (reserveGANG > 0n) {
-      const croPerGang = parseFloat(ethers.formatUnits(reserveCRO, 18)) / parseFloat(ethers.formatUnits(reserveGANG, 18));
-      TOKENS.GANG.price = croPerGang * TOKENS.CRO.price;
-    }
-  } catch(e) { /* keep last price */ }
-}
-
-// ── Fetch live pool ratio for liquidity page ─────────────────
-let _poolReserves = {}; // keyed by "SYMA-SYMB"
-
-async function fetchPoolRatio(symA, symB) {
-  try {
-    const _rp2 = getReadProvider();
-    if (!_rp2 || !CONTRACTS.FACTORY) return null;
-    const factory = new ethers.Contract(CONTRACTS.FACTORY, FACTORY_ABI, _rp2);
-    const addrA = TOKENS[symA]?.address === "native" ? CONTRACTS.WCRO : TOKENS[symA]?.address;
-    const addrB = TOKENS[symB]?.address === "native" ? CONTRACTS.WCRO : TOKENS[symB]?.address;
-    if (!addrA || !addrB) return null;
-    const pairAddr = await factory.getPair(addrA, addrB);
-    if (!pairAddr || pairAddr === "0x0000000000000000000000000000000000000000") return null;
-    const pair = new ethers.Contract(pairAddr, PAIR_ABI, _rp);
-    const [token0, reserves] = await Promise.all([pair.token0(), pair.getReserves()]);
-    const isAtoken0 = token0.toLowerCase() === addrA.toLowerCase();
-    const resA = parseFloat(ethers.formatUnits(isAtoken0 ? reserves[0] : reserves[1], TOKENS[symA].decimals));
-    const resB = parseFloat(ethers.formatUnits(isAtoken0 ? reserves[1] : reserves[0], TOKENS[symB].decimals));
-    if (resA > 0 && resB > 0) {
-      const ratio = resB / resA; // how many B per A
-      _poolReserves[symA+"-"+symB] = { ratio, resA, resB, pairAddr };
-      return ratio;
-    }
-  } catch(e) {}
-  return null;
-}
-
-async function calcLiqRatioOnChain() {
-  const symA = document.getElementById("liqTokenA")?.value || "CRO";
-  const symB = document.getElementById("liqTokenB")?.value || "GANG";
-  const aVal = parseFloat(document.getElementById("liqA").value) || 0;
-  if (aVal <= 0) return;
-  if (!getReadProvider()) { calcLiqRatio(); return; } // no provider, use price fallback
-  // Try on-chain first, fall back to price-based
-  const ratio = await fetchPoolRatio(symA, symB);
-  if (ratio !== null) {
-    const bVal = aVal * ratio;
-    document.getElementById("liqB").value = bVal.toFixed(6);
-    const priceA = TOKENS[symA]?.price || 1;
-    const priceB = TOKENS[symB]?.price || 1;
-    document.getElementById("liqAUSD").textContent = "~$" + (aVal * priceA).toFixed(2);
-    document.getElementById("liqBUSD").textContent = "~$" + (bVal * priceB).toFixed(2);
-    const rateEl = document.getElementById("liqRate");
-    if (rateEl) rateEl.textContent = "1 " + symA + " = " + ratio.toFixed(6) + " " + symB + " (live pool)";
-  } else {
-    calcLiqRatio(); // fallback to price-based
-  }
-}
-
-
-// ── Price refresh: split strategy ────────────────────────────
-// On-chain prices (GANG from reserves, swap output): every 5s
-// CoinGecko REST (CRO, USDC, WBTC, WETH): every 30s to avoid rate limits
-let _fetchInProgress = false;
-let _lastCoinGeckoFetch = 0;
-
 async function fetchLivePrices() {
-  if (_fetchInProgress) return; // skip if previous call still running
-  _fetchInProgress = true;
+  setPriceStatus(true);
   try {
-    const now = Date.now();
-    const needCoinGecko = (now - _lastCoinGeckoFetch) >= 30000;
-
-    setPriceStatus(true);
-
-    if (needCoinGecko) {
-      try {
-        const ids = Object.values(COINGECKO_IDS).filter(Boolean).join(",");
-        const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
-        if (res.ok) {
-          const data = await res.json();
-          for (const [sym, id] of Object.entries(COINGECKO_IDS)) {
-            if (id && data[id]?.usd) TOKENS[sym].price = data[id].usd;
-          }
-          _lastCoinGeckoFetch = now;
-        }
-      } catch(e) { /* keep stale CoinGecko prices */ }
+    const ids = Object.values(COINGECKO_IDS).filter(Boolean).join(",");
+    const res  = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
+    if (!res.ok) throw new Error("fetch failed");
+    const data = await res.json();
+    for (const [sym, id] of Object.entries(COINGECKO_IDS)) {
+      if (id && data[id]?.usd) {
+        TOKENS[sym].price = data[id].usd;
+      }
     }
-
-    // Always fetch on-chain GANG price from reserves (fast, own RPC)
-    await fetchGangPriceOnChain();
-
     setPriceStatus(false);
     updateTickerPrices();
     updateSwapPriceBadges();
     updateLiqPriceCards();
-    updateBalanceDisplays();
-
-    const fmt6 = p => p < 0.001 ? p.toFixed(8) : p >= 1000 ? p.toLocaleString("en-US",{maximumFractionDigits:2}) : p >= 1 ? p.toFixed(4) : p.toFixed(6);
-    const gangPriceEl = document.getElementById("statPrice");
-    if (gangPriceEl) gangPriceEl.textContent = `$${fmt6(TOKENS.GANG.price)}`;
-    const gangTokenPriceEl = document.getElementById("gangTokenPrice");
-    if (gangTokenPriceEl) gangTokenPriceEl.textContent = `$${fmt6(TOKENS.GANG.price)}`;
-
+    // Refresh swap calc if user has an amount entered
     const fromAmt = parseFloat(document.getElementById("swapFrom")?.value);
     if (fromAmt > 0) calcSwap();
-
-    await calcLiqRatioOnChain();
+    calcLiqRatio();
   } catch(e) {
+    // silently fail — keep mock prices, still update UI with current values
     setPriceStatus(false);
-  } finally {
-    _fetchInProgress = false;
+    updateTickerPrices();
+    updateSwapPriceBadges();
+    updateLiqPriceCards();
   }
 }
 
+// Fetch on load and every 30s
 fetchLivePrices();
-setInterval(fetchLivePrices, 5000);
+setInterval(fetchLivePrices, 30000);
 
 // ── Approve liquidity tokens ──────────────────────────────────
 async function approveLiqToken(side) {
@@ -2439,12 +2185,16 @@ async function approveLiqToken(side) {
   btn.disabled  = true;
 
   try {
-    if (!CONTRACTS.ROUTER) { showToast("❌ Router contract not configured.", "error"); btn.innerHTML = orig; btn.disabled = false; return; }
-    showToast("⏳ Approving " + sym + " for Router…", "");
-    const contract = new ethers.Contract(tok.address, ERC20_ABI, state.signer);
-    const tx = await contract.approve(CONTRACTS.ROUTER, ethers.MaxUint256);
-    showToast("⏳ Approval submitted, waiting for confirmation…", "");
-    await tx.wait();
+    if (CONTRACTS.ROUTER && state.signer) {
+      showToast("⏳ Approving " + sym + " for Router…", "");
+      const contract = new ethers.Contract(tok.address, ERC20_ABI, state.signer);
+      const tx = await contract.approve(CONTRACTS.ROUTER, ethers.MaxUint256);
+      await tx.wait();
+    } else {
+      // Mock approval — simulate delay
+      showToast("⏳ Approving " + sym + "…", "");
+      await simulateTx(1500);
+    }
     showToast("✅ " + sym + " approved! You can now add liquidity.", "success");
     btn.innerHTML     = "✅ " + sym + " APPROVED";
     btn.style.color   = "var(--green)";
@@ -2465,17 +2215,26 @@ function switchLiqTab(tab, btn) {
   btn.classList.add("active");
   document.getElementById("liq-add").style.display    = tab === "add"    ? "block" : "none";
   document.getElementById("liq-remove").style.display = tab === "remove" ? "block" : "none";
-  if (tab === "remove") { setTimeout(() => { updateBalanceDisplays(); calcRemoveLiq(); }, 0); }
 }
 
 function calcLiqRatio() {
-  // Price-based fallback ratio calculation (used when wallet not connected or pool not found)
   const symA = document.getElementById("liqTokenA")?.value || "CRO";
   const symB = document.getElementById("liqTokenB")?.value || "GANG";
   const aVal = parseFloat(document.getElementById("liqA").value) || 0;
 
-  // Always show/hide approve buttons regardless of amount
-  _updateLiqApproveButtons(symA, symB);
+  // Reset approve buttons on token change
+  ["A","B"].forEach(side => {
+    const btnId = side === "A" ? "approveTokenABtn" : "approveTokenBBtn";
+    const btn = document.getElementById(btnId);
+    const sym = side === "A" ? symA : symB;
+    if (btn && btn.dataset.approved && !btn.innerHTML.includes(sym)) {
+      btn.dataset.approved = "";
+      btn.innerHTML = `🔓 APPROVE ${sym}`;
+      btn.style.color = "";
+      btn.style.borderColor = "";
+      btn.disabled = false;
+    }
+  });
 
   if (aVal <= 0) {
     document.getElementById("liqShare").textContent = "—";
@@ -2484,93 +2243,65 @@ function calcLiqRatio() {
     document.getElementById("liqAUSD").textContent  = "≈ $0.00";
     const rateEl = document.getElementById("liqRate");
     if (rateEl) rateEl.textContent = "—";
-    document.getElementById("liqB").value = "";
     return;
   }
 
-  // Check if we have cached on-chain pool ratio
-  const cached = _poolReserves[symA+"-"+symB] || _poolReserves[symB+"-"+symA];
   const priceA = TOKENS[symA]?.price || 1;
   const priceB = TOKENS[symB]?.price || 1;
 
-  let bVal;
-  let rateLabel;
-  if (cached) {
-    const ratio = _poolReserves[symA+"-"+symB] ? cached.ratio : (1 / cached.ratio);
-    bVal = aVal * ratio;
-    rateLabel = "1 " + symA + " = " + ratio.toFixed(6) + " " + symB + " (live pool)";
-  } else {
-    bVal = (aVal * priceA) / priceB;
-    rateLabel = "1 " + symA + " = " + (priceA / priceB).toFixed(6) + " " + symB + " (price est.)";
-  }
+  // Auto-calculate Token B amount based on price ratio (equal USD value each side)
+  const bVal = (aVal * priceA) / priceB;
+  document.getElementById("liqB").value = bVal.toFixed(6);
 
-  const bEl = document.getElementById("liqB");
-  if (bEl && !bEl.matches(":focus")) bEl.value = bVal.toFixed(6);
-
+  // USD values
   const usdA = aVal * priceA;
   const usdB = bVal * priceB;
   document.getElementById("liqAUSD").textContent = "≈ $" + usdA.toFixed(2);
   document.getElementById("liqBUSD").textContent = "≈ $" + usdB.toFixed(2);
 
+  // Rate
   const rateEl = document.getElementById("liqRate");
-  if (rateEl) rateEl.textContent = rateLabel;
+  if (rateEl) rateEl.textContent = "1 " + symA + " = " + (priceA / priceB).toFixed(6) + " " + symB;
 
+  // LP estimate and pool share
   document.getElementById("liqShare").textContent = "< 0.01%";
   document.getElementById("liqLP").textContent    = (Math.sqrt(usdA * usdB) * 0.001).toFixed(6) + " LP";
 
-  updateLiqPriceCards();
-  updateBalanceDisplays();
-
-  // Kick off async on-chain fetch in background
-  if (state.provider) calcLiqRatioOnChain();
-}
-
-function calcLiqRatioFromB() {
-  // User typed in Token B — back-calculate Token A amount
-  const symA = document.getElementById("liqTokenA")?.value || "CRO";
-  const symB = document.getElementById("liqTokenB")?.value || "GANG";
-  const bVal = parseFloat(document.getElementById("liqB").value) || 0;
-  if (bVal <= 0) return;
-
-  const cached = _poolReserves[symA+"-"+symB] || _poolReserves[symB+"-"+symA];
-  const priceA = TOKENS[symA]?.price || 1;
-  const priceB = TOKENS[symB]?.price || 1;
-  let aVal;
-  if (cached) {
-    const ratio = _poolReserves[symA+"-"+symB] ? cached.ratio : (1 / cached.ratio);
-    aVal = bVal / ratio;
-  } else {
-    aVal = (bVal * priceB) / priceA;
-  }
-  const aEl = document.getElementById("liqA");
-  if (aEl && !aEl.matches(":focus")) aEl.value = aVal.toFixed(6);
-  document.getElementById("liqAUSD").textContent = "≈ $" + (aVal * priceA).toFixed(2);
-  document.getElementById("liqBUSD").textContent = "≈ $" + (bVal * priceB).toFixed(2);
-  _updateLiqApproveButtons(symA, symB);
-}
-
-function _updateLiqApproveButtons(symA, symB) {
+  // Show approve buttons for non-CRO tokens — always show so user can see steps
   const btnA = document.getElementById("approveTokenABtn");
   const btnB = document.getElementById("approveTokenBBtn");
   if (btnA) {
     if (symA !== "CRO" && state.address) {
       btnA.style.display = "block";
       if (!btnA.dataset.approved) {
-        btnA.innerHTML = `🔓 APPROVE ${symA}`; btnA.style.color = ""; btnA.style.borderColor = ""; btnA.disabled = false; btnA.dataset.approved = "";
+        btnA.innerHTML = `🔓 APPROVE ${symA}`;
+        btnA.style.color = "";
+        btnA.style.borderColor = "";
+        btnA.disabled = false;
+        btnA.dataset.approved = "";
       }
-    } else { btnA.style.display = "none"; }
+    } else {
+      btnA.style.display = "none";
+    }
   }
   if (btnB) {
     if (symB !== "CRO" && state.address) {
       btnB.style.display = "block";
       if (!btnB.dataset.approved) {
-        btnB.innerHTML = `🔓 APPROVE ${symB}`; btnB.style.color = ""; btnB.style.borderColor = ""; btnB.disabled = false; btnB.dataset.approved = "";
+        btnB.innerHTML = `🔓 APPROVE ${symB}`;
+        btnB.style.color = "";
+        btnB.style.borderColor = "";
+        btnB.disabled = false;
+        btnB.dataset.approved = "";
       }
-    } else { btnB.style.display = "none"; }
+    } else {
+      btnB.style.display = "none";
+    }
   }
+  updateLiqPriceCards();
 }
 
-function reviewAddLiquidity() {
+async function doAddLiquidity() {
   const symA = document.getElementById("liqTokenA")?.value || "CRO";
   const symB = document.getElementById("liqTokenB")?.value || "GANG";
   const aAmt = parseFloat(document.getElementById("liqA").value);
@@ -2578,258 +2309,98 @@ function reviewAddLiquidity() {
   if (!aAmt || !bAmt) { showToast("Enter both token amounts.", "error"); return; }
   if (!state.address) { showToast("Connect your wallet first.", "error"); connectWallet(); return; }
 
-  const usdA = aAmt * (TOKENS[symA]?.price || 0);
-  const usdB = bAmt * (TOKENS[symB]?.price || 0);
-
-  document.getElementById("liqConfirmTitle").textContent = "Confirm Add Liquidity";
-  document.getElementById("liqConfirmBody").innerHTML = `
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
-      <div class="confirm-token-row">
-        <span style="font-size:22px">${TOKENS[symA]?.icon||"🪙"}</span>
-        <span class="confirm-token-amt">${aAmt}</span>
-        <span class="confirm-token-sym">${symA}</span>
-        <span class="confirm-token-usd">≈ $${usdA.toFixed(2)}</span>
-      </div>
-      <div class="confirm-arrow">+</div>
-      <div class="confirm-token-row">
-        <span style="font-size:22px">${TOKENS[symB]?.icon||"🪙"}</span>
-        <span class="confirm-token-amt">${bAmt.toFixed(6)}</span>
-        <span class="confirm-token-sym">${symB}</span>
-        <span class="confirm-token-usd">≈ $${usdB.toFixed(2)}</span>
-      </div>
-    </div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px">
-      <div class="confirm-row"><span class="confirm-row-label">Pool</span><span class="confirm-row-val">${symA} / ${symB}</span></div>
-      <div class="confirm-row"><span class="confirm-row-label">Total Value</span><span class="confirm-row-val">≈ $${(usdA+usdB).toFixed(2)}</span></div>
-      <div class="confirm-row"><span class="confirm-row-label">LP Tokens</span><span class="confirm-row-val">${document.getElementById("liqLP")?.textContent || "—"}</span></div>
-      <div class="confirm-row"><span class="confirm-row-label">Slippage</span><span class="confirm-row-val">${state.slippage}%</span></div>
-    </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">
-      ⚠️ Your wallet will ask you to approve tokens and confirm. Gas fees apply on each step.
-    </div>
-    <button class="btn-primary" onclick="closeLiqConfirmModal();doAddLiquidity()" style="background:linear-gradient(135deg,var(--green),#1e8449)">✅ CONFIRM ADD LIQUIDITY</button>
-  `;
-  document.getElementById("liqConfirmModal").classList.add("open");
-}
-
-function reviewRemoveLiquidity() {
-  const symA = document.getElementById("liqTokenA")?.value || "CRO";
-  const symB = document.getElementById("liqTokenB")?.value || "GANG";
-  const raw = parseFloat(document.getElementById("removeLPAmt")?.value) || 0;
-  if (!raw || raw <= 0) { showToast("Enter LP amount to remove.", "error"); return; }
-  if (!state.address) { showToast("Connect your wallet first.", "error"); connectWallet(); return; }
-
-  const recvA = document.getElementById("removeA")?.textContent || "—";
-  const recvB = document.getElementById("removeB")?.textContent || "—";
-
-  document.getElementById("liqConfirmTitle").textContent = "Confirm Remove Liquidity";
-  document.getElementById("liqConfirmBody").innerHTML = `
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
-      <div class="confirm-row"><span class="confirm-row-label">Pool</span><span class="confirm-row-val">${symA} / ${symB}</span></div>
-      <div class="confirm-row"><span class="confirm-row-label">LP to Burn</span><span class="confirm-row-val">${raw.toFixed(6)} LP</span></div>
-      <div class="confirm-row"><span class="confirm-row-label">You'll receive ~</span><span class="confirm-row-val">${recvA}</span></div>
-      <div class="confirm-row"><span class="confirm-row-label"></span><span class="confirm-row-val">${recvB}</span></div>
-    </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">
-      ⚠️ Your wallet will ask you to approve the LP token and confirm the removal. Gas fees apply.
-    </div>
-    <button class="btn-primary" onclick="closeLiqConfirmModal();doRemoveLiquidity()" style="background:linear-gradient(135deg,var(--red),#922b21)">🔓 CONFIRM REMOVE LIQUIDITY</button>
-  `;
-  document.getElementById("liqConfirmModal").classList.add("open");
-}
-
-async function doAddLiquidity() {
-  const symA = document.getElementById("liqTokenA")?.value || "CRO";
-  const symB = document.getElementById("liqTokenB")?.value || "GANG";
-  const aAmt = parseFloat(document.getElementById("liqA").value);
-  let bAmt   = parseFloat(document.getElementById("liqB").value);
-
-  if (!aAmt || aAmt <= 0) { showToast("Enter Token A amount.", "error"); return; }
-  if (!state.address)     { showToast("Connect your wallet first.", "error"); connectWallet(); return; }
-  if (!CONTRACTS.ROUTER)  { showToast("❌ Router contract not configured.", "error"); return; }
-  if (symA === symB)      { showToast("Select two different tokens.", "error"); return; }
-
-  // Re-fetch on-chain ratio and recalculate bAmt right before submitting for accuracy
-  showToast("⏳ Fetching live pool ratio…", "");
-  const ratio = await fetchPoolRatio(symA, symB);
-  if (ratio !== null) {
-    bAmt = aAmt * ratio;
-    document.getElementById("liqB").value = bAmt.toFixed(6);
-  } else if (!bAmt || bAmt <= 0) {
-    // No pool yet / new pair — use price-based estimate
-    const priceA = TOKENS[symA]?.price || 1;
-    const priceB = TOKENS[symB]?.price || 1;
-    bAmt = (aAmt * priceA) / priceB;
-    document.getElementById("liqB").value = bAmt.toFixed(6);
-  }
-
-  if (!bAmt || bAmt <= 0) { showToast("Could not determine Token B amount.", "error"); return; }
-
-  const tokenA  = TOKENS[symA];
-  const tokenB  = TOKENS[symB];
-  const deadline = Math.floor(Date.now() / 1000) + 1200; // 20 min deadline
-  const router   = new ethers.Contract(CONTRACTS.ROUTER, ROUTER_ABI, state.signer);
-
-  // Parse with correct decimals — use toFixed to avoid scientific notation
-  const amtA = ethers.parseUnits(aAmt.toFixed(tokenA.decimals), tokenA.decimals);
-  const amtB = ethers.parseUnits(bAmt.toFixed(tokenB.decimals), tokenB.decimals);
-
-  // slippage tolerance (default 0.5%)
-  const slip = state.slippage / 100;
-  const minA = amtA * BigInt(Math.floor((1 - slip) * 10000)) / 10000n;
-  const minB = amtB * BigInt(Math.floor((1 - slip) * 10000)) / 10000n;
-
+  const isMock = !CONTRACTS.ROUTER;
+  showToast("⏳ Adding liquidity…", "");
   try {
-    let tx;
-    if (symA === "CRO") {
-      showToast("⏳ Approving " + symB + "…", "");
-      await approveToken(tokenB.address, CONTRACTS.ROUTER, amtB);
-      showToast("⏳ Confirm add liquidity in wallet…", "");
-      tx = await router.addLiquidityETH(tokenB.address, amtB, minB, minA, state.address, deadline, { value: amtA });
-    } else if (symB === "CRO") {
-      showToast("⏳ Approving " + symA + "…", "");
-      await approveToken(tokenA.address, CONTRACTS.ROUTER, amtA);
-      showToast("⏳ Confirm add liquidity in wallet…", "");
-      tx = await router.addLiquidityETH(tokenA.address, amtA, minA, minB, state.address, deadline, { value: amtB });
+    if (isMock) {
+      await simulateTx(2000);
+      addTx("Add LP", aAmt + " " + symA + " + " + bAmt + " " + symB, "0x" + Math.random().toString(16).slice(2,12), "ok");
+      showToast("✅ Liquidity added! You received GANG-LP tokens.", "success");
+
+      // Track protocol fee earned (0.3% of deposit value)
+      const depositUSD = (aAmt * (TOKENS[symA]?.price || 1)) + (bAmt * (TOKENS[symB]?.price || 1));
+      const liqFeeUSD = depositUSD * (TREASURY.liquidityFee / 100);
+      state.treasuryEarned = (state.treasuryEarned || 0) + liqFeeUSD;
+
+      // Grant mock LP balance to matching farm(s)
+      if (!state.lpBalances) state.lpBalances = {};
+      const lpReceived = aAmt * 0.0024;
+      const matchPid = FARMS.findIndex(f => f.tokens.includes(symA) && f.tokens.includes(symB));
+      if (matchPid >= 0) {
+        state.lpBalances[matchPid] = (state.lpBalances[matchPid] || 0) + lpReceived;
+        const lpBalEl = document.getElementById("lpbal-" + matchPid);
+        if (lpBalEl) lpBalEl.textContent = state.lpBalances[matchPid].toFixed(4);
+      }
+
+      const posEl = document.getElementById("positionsContent");
+      if (posEl) posEl.innerHTML = `
+        <div class="positions-list">
+          <div class="position-row">
+            <div>
+              <div class="position-name">🔴 CRO / 🔫 GANG</div>
+              <div class="position-sub">LP Balance: ${(aAmt*0.0024).toFixed(4)} · Your share: 0.01%</div>
+            </div>
+            <div class="position-value">$${(aAmt*0.095*2).toFixed(2)}</div>
+          </div>
+        </div>
+      `;
     } else {
-      showToast("⏳ Approving " + symA + "…", "");
-      await approveToken(tokenA.address, CONTRACTS.ROUTER, amtA);
-      showToast("⏳ Approving " + symB + "…", "");
-      await approveToken(tokenB.address, CONTRACTS.ROUTER, amtB);
-      showToast("⏳ Confirm add liquidity in wallet…", "");
-      tx = await router.addLiquidity(tokenA.address, tokenB.address, amtA, amtB, minA, minB, state.address, deadline);
+      const tokenA  = TOKENS[symA];
+      const tokenB  = TOKENS[symB];
+      const deadline = Math.floor(Date.now() / 1000) + 600;
+      const router   = new ethers.Contract(CONTRACTS.ROUTER, ROUTER_ABI, state.signer);
+      const amtA = ethers.parseUnits(String(aAmt), tokenA.decimals);
+      const amtB = ethers.parseUnits(String(bAmt), tokenB.decimals);
+      const minA = amtA * BigInt(Math.floor((1 - state.slippage/100) * 1000)) / 1000n;
+      const minB = amtB * BigInt(Math.floor((1 - state.slippage/100) * 1000)) / 1000n;
+      let tx;
+      if (symA === "CRO") {
+        await approveToken(tokenB.address, CONTRACTS.ROUTER, amtB);
+        tx = await router.addLiquidityETH(tokenB.address, amtB, minB, minA, state.address, deadline, { value: amtA });
+      } else if (symB === "CRO") {
+        await approveToken(tokenA.address, CONTRACTS.ROUTER, amtA);
+        tx = await router.addLiquidityETH(tokenA.address, amtA, minA, minB, state.address, deadline, { value: amtB });
+      } else {
+        await approveToken(tokenA.address, CONTRACTS.ROUTER, amtA);
+        await approveToken(tokenB.address, CONTRACTS.ROUTER, amtB);
+        tx = await router.addLiquidity(tokenA.address, tokenB.address, amtA, amtB, minA, minB, state.address, deadline);
+      }
+      showToast("⏳ Adding liquidity… waiting for confirmation.", "");
+      const receipt = await tx.wait();
+      addTx("Add LP", `${aAmt} ${symA} + ${bAmt} ${symB}`, receipt.hash, "ok");
+      showToast("✅ Liquidity added successfully!", "success");
+      await loadBalances();
     }
-    showToast("⏳ Transaction submitted, awaiting confirmation…", "");
-    const receipt = await tx.wait();
-    addTx("Add LP", `${aAmt} ${symA} + ${bAmt.toFixed(4)} ${symB}`, receipt.hash, "ok");
-    showToast("✅ Liquidity added successfully!", "success");
-    document.getElementById("liqA").value = "";
-    document.getElementById("liqB").value = "";
-    await loadBalances();
-    updateBalanceDisplays();
-    calcLiqRatio();
-  } catch(e) {
-    const msg = e?.reason || e?.info?.error?.message || e?.message || "Transaction failed";
-    showToast("❌ " + msg.slice(0, 120), "error");
-  }
+  } catch(e) { showToast("❌ " + ((e?.reason || e?.message) || "Failed").slice(0,100), "error"); }
 }
 
 async function doRemoveLiquidity() {
-  const raw    = parseFloat(document.getElementById("removeLPAmt")?.value) || 0;
-  if (!raw || raw <= 0) { showToast("Enter LP amount to remove.", "error"); return; }
+  const lpAmt = parseFloat(document.getElementById("removeLPAmt").value);
+  if (!lpAmt) { showToast("Enter LP token amount.", "error"); return; }
   if (!state.address) { showToast("Connect your wallet first.", "error"); connectWallet(); return; }
-  if (!CONTRACTS.ROUTER) { showToast("❌ Router contract not configured.", "error"); return; }
-
-  const symA = document.getElementById("liqTokenA")?.value || "CRO";
-  const symB = document.getElementById("liqTokenB")?.value || "GANG";
-  const tokenA = TOKENS[symA];
-  const tokenB = TOKENS[symB];
-
-  // Find the LP token address from the matching farm or fetch from factory
-  let lpAddr = null;
-  const matchFarm = FARMS.find(f => f.tokens.includes(symA) && f.tokens.includes(symB));
-  if (matchFarm?.lpAddr) {
-    lpAddr = matchFarm.lpAddr;
-  } else {
-    try {
-      const factory = new ethers.Contract(CONTRACTS.FACTORY, FACTORY_ABI, state.provider);
-      const addrA = tokenA.address === "native" ? CONTRACTS.WCRO : tokenA.address;
-      const addrB = tokenB.address === "native" ? CONTRACTS.WCRO : tokenB.address;
-      lpAddr = await factory.getPair(addrA, addrB);
-    } catch(e) { showToast("❌ Could not find LP pair address.", "error"); return; }
-  }
-  if (!lpAddr || lpAddr === "0x0000000000000000000000000000000000000000") {
-    showToast("❌ No LP pair found for " + symA + "/" + symB + ".", "error"); return;
-  }
-
+  const isMock = !CONTRACTS.ROUTER;
   showToast("⏳ Removing liquidity…", "");
-  try {
-    const lpContract = new ethers.Contract(lpAddr, ERC20_ABI, state.signer);
-    const lpBal = await lpContract.balanceOf(state.address);
-    const lpAmt = ethers.parseUnits(String(raw), 18);
-    if (lpAmt > lpBal) { showToast("❌ LP amount exceeds your balance.", "error"); return; }
-
-    const deadline = Math.floor(Date.now() / 1000) + 600;
-    const router   = new ethers.Contract(CONTRACTS.ROUTER, ROUTER_ABI, state.signer);
-    // Calculate min amounts with slippage from reserves
-  let minA = 0n, minB = 0n;
-  try {
-    const factory2 = new ethers.Contract(CONTRACTS.FACTORY, FACTORY_ABI, getReadProvider() || state.provider);
-    const addrA2 = tokenA.address === "native" ? CONTRACTS.WCRO : tokenA.address;
-    const addrB2 = tokenB.address === "native" ? CONTRACTS.WCRO : tokenB.address;
-    const pairAddr2 = await factory2.getPair(addrA2, addrB2);
-    if (pairAddr2 && pairAddr2 !== "0x0000000000000000000000000000000000000000") {
-      const pair2 = new ethers.Contract(pairAddr2, PAIR_ABI, state.provider);
-      const [tk0, res2, totalLP2] = await Promise.all([pair2.token0(), pair2.getReserves(),
-        new ethers.Contract(pairAddr2, ["function totalSupply() view returns(uint256)"], state.provider).totalSupply()]);
-      const lpFrac = (lpAmt * 10000n) / totalLP2;
-      const isAtoken0 = tk0.toLowerCase() === addrA2.toLowerCase();
-      const resAPool = isAtoken0 ? res2[0] : res2[1];
-      const resBPool = isAtoken0 ? res2[1] : res2[0];
-      const slip2 = BigInt(Math.floor((1 - state.slippage / 100) * 10000));
-      minA = resAPool * lpFrac / 10000n * slip2 / 10000n;
-      minB = resBPool * lpFrac / 10000n * slip2 / 10000n;
-    }
-  } catch(e) { minA = 0n; minB = 0n; }
-
-    showToast("⏳ Approving LP token for Router…", "");
-    const approveTx = await lpContract.approve(CONTRACTS.ROUTER, lpAmt);
-    await approveTx.wait();
-
-    showToast("⏳ Confirm withdraw in your wallet…", "");
-    let tx;
-    if (symA === "CRO" || symB === "CRO") {
-      const tokenAddr = symA === "CRO" ? tokenB.address : tokenA.address;
-      tx = await router.removeLiquidityETH(tokenAddr, lpAmt, minB, minA, state.address, deadline);
-    } else {
-      tx = await router.removeLiquidity(tokenA.address, tokenB.address, lpAmt, minA, minB, state.address, deadline);
-    }
-
-    showToast("⏳ Transaction submitted, waiting for confirmation…", "");
-    const receipt = await tx.wait();
-    addTx("Remove LP", `${raw.toFixed(4)} LP ${symA}/${symB}`, receipt.hash, "ok");
-    showToast("✅ Liquidity removed successfully!", "success");
-    document.getElementById("removeLPAmt").value = "";
-    document.getElementById("removeSlider").value = 0;
-    await loadBalances();
-    updateBalanceDisplays();
-    calcRemoveLiq();
-  } catch(e) {
-    showToast("❌ " + ((e?.reason || e?.message) || "Remove liquidity failed").slice(0,100), "error");
-  }
+  await simulateTx(2000);
+  addTx("Remove LP", `${lpAmt.toFixed(4)} LP tokens`, "0x" + Math.random().toString(16).slice(2,12), "ok");
+  showToast("✅ Liquidity removed successfully.", "success");
 }
 
 function setRemovePercent(pct) {
-  const symA = document.getElementById("liqTokenA")?.value || "CRO";
-  const symB = document.getElementById("liqTokenB")?.value || "GANG";
-  const matchFarm = FARMS.find(f => f.tokens.includes(symA) && f.tokens.includes(symB));
-  const lpBal = matchFarm ? (state.lpBalances?.[matchFarm.pid] || 0) : 0;
-  const p   = Number(pct);
-  const amt = p >= 100 ? lpBal : Math.min(lpBal * p / 100, lpBal);
-  const el  = document.getElementById("removeLPAmt");
-  if (el) el.value = isNaN(amt) || amt <= 0 ? "" : amt.toFixed(6);
+  const lpBal = state._mockLPBalance || 0;
+  const amt    = lpBal * pct / 100;
+  document.getElementById("removeLPAmt").value = isNaN(amt) ? 0 : amt.toFixed(6);
   calcRemoveLiq();
 }
 
 function calcRemoveLiq() {
-  const symA = document.getElementById("liqTokenA")?.value || "CRO";
-  const symB = document.getElementById("liqTokenB")?.value || "GANG";
-  const matchFarm = FARMS.find(f => f.tokens.includes(symA) && f.tokens.includes(symB));
-  const lpBal = matchFarm ? (state.lpBalances?.[matchFarm.pid] || 0) : 0;
-  const raw   = parseFloat(document.getElementById("removeLPAmt")?.value) || 0;
-  const amt   = lpBal > 0 ? Math.min(raw, lpBal) : raw;
-  const pct   = lpBal > 0 ? Math.min(100, (amt / lpBal) * 100) : 0;
+  const amt = parseFloat(document.getElementById("removeLPAmt").value) || 0;
+  // Sync range slider
+  const lpBal = state._mockLPBalance || 1;
+  const pct = Math.min(100, (amt / lpBal) * 100);
   const slider = document.getElementById("removeSlider");
   if (slider) slider.value = pct;
-  const eA = document.getElementById("removeA");
-  const eB = document.getElementById("removeB");
-  // Show estimated receive amounts using current token prices (actual amounts come from chain on tx)
-  const priceA = TOKENS[symA]?.price || 1;
-  const priceB = TOKENS[symB]?.price || 1;
-  if (eA) eA.textContent = amt > 0 ? "~" + ((amt * priceB / priceA) / 2).toFixed(4) + " " + symA : "—";
-  if (eB) eB.textContent = amt > 0 ? "~" + ((amt * priceA / priceB) / 2).toFixed(4) + " " + symB : "—";
-  const sA = document.getElementById("removeSymA"); if (sA) sA.textContent = (TOKENS[symA]?.icon||"")+" "+symA;
-  const sB = document.getElementById("removeSymB"); if (sB) sB.textContent = (TOKENS[symB]?.icon||"")+" "+symB;
+  document.getElementById("removeA").textContent = (amt * 1000).toFixed(2) + " CRO";
+  document.getElementById("removeB").textContent = (amt * 40000).toFixed(2) + " GANG";
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2889,23 +2460,15 @@ function renderFarms() {
     `;
   }).join("");
 
-  // Poll real pending rewards from chain every 15s if Chef is deployed
+  // Live-update earnings every 3s (mock) — clear any existing timer first
   clearInterval(window._farmTimer);
-  if (CONTRACTS.CHEF && state.address) {
-    window._farmTimer = setInterval(async () => {
-      try {
-        const chef = new ethers.Contract(CONTRACTS.CHEF, CHEF_ABI, state.provider);
-        for (const f of FARMS) {
-          try {
-            const pending = await chef.pendingGang(f.pid, state.address);
-            f.earned = parseFloat(ethers.formatUnits(pending, 18));
-            const el = document.getElementById(`earned-${f.pid}`);
-            if (el) el.textContent = f.earned.toFixed(4) + " GANG";
-          } catch {}
-        }
-      } catch {}
-    }, 15000);
-  }
+  window._farmTimer = setInterval(() => {
+    FARMS.forEach(f => {
+      f.earned += Math.random() * 0.002;
+      const el = document.getElementById(`earned-${f.pid}`);
+      if (el) el.textContent = f.earned.toFixed(4) + " GANG";
+    });
+  }, 3000);
 }
 
 function tokenColor(sym) {
@@ -2913,64 +2476,27 @@ function tokenColor(sym) {
   return colors[sym] || "#2d3748";
 }
 
-let _harvestPid = null;
-
-function openHarvest(pid) {
+async function openHarvest(pid) {
   if (!state.address) { connectWallet(); return; }
   const farm = FARMS[pid];
   if (farm.earned <= 0) { showToast("Nothing to harvest yet!", "error"); return; }
-  if (!CONTRACTS.CHEF) { showToast("❌ MasterChef contract not deployed yet. Set CONTRACTS.CHEF to enable harvesting.", "error"); return; }
-  _harvestPid = pid;
-  document.getElementById("harvestConfirmAmt").textContent = farm.earned.toFixed(4);
-  document.getElementById("harvestConfirmFarm").textContent = farm.name;
-  document.getElementById("harvestConfirmUSD").textContent = "≈ $" + (farm.earned * TOKENS.GANG.price).toFixed(4);
-  document.getElementById("harvestConfirmModal").classList.add("open");
-}
-
-function closeHarvestConfirmModal() {
-  document.getElementById("harvestConfirmModal").classList.remove("open");
-  _harvestPid = null;
-}
-
-async function doHarvest() {
-  const pid = _harvestPid;
-  if (pid === null || pid === undefined) return;
-  closeHarvestConfirmModal();
-
-  if (pid === "all") {
-    const total = FARMS.reduce((s,f) => s + f.earned, 0);
-    showToast(`⏳ Confirm harvest all in your wallet…`, "");
-    try {
-      const chef = new ethers.Contract(CONTRACTS.CHEF, CHEF_ABI, state.signer);
-      const pids = FARMS.map(f => f.pid);
-      const tx = await chef.harvestAll(pids);
-      showToast("⏳ Harvest All submitted, waiting for confirmation…", "");
-      await tx.wait();
-      addTx("Harvest All", `${total.toFixed(4)} GANG`, tx.hash, "ok");
-      showToast(`✅ Harvested ${total.toFixed(4)} GANG total!`, "success");
-      FARMS.forEach(f => { f.earned = 0; });
-      renderFarms();
-      await loadBalances();
-    } catch(e) {
-      showToast("❌ " + (e?.reason || e?.message || "Harvest failed").slice(0,100), "error");
-    }
-    return;
-  }
-
-  const farm = FARMS[pid];
   const earned = farm.earned;
-  showToast(`⏳ Confirm harvest in your wallet…`, "");
+  const isMock = !CONTRACTS.CHEF;
+  showToast(`⏳ Harvesting ${earned.toFixed(4)} GANG…`, "");
   try {
-    const chef = new ethers.Contract(CONTRACTS.CHEF, CHEF_ABI, state.signer);
-    const tx = await chef.harvest(pid);
-    showToast("⏳ Harvest submitted, waiting for confirmation…", "");
-    await tx.wait();
-    addTx("Harvest", `${earned.toFixed(4)} GANG from ${farm.name}`, tx.hash, "ok");
+    if (!isMock) {
+      const chef = new ethers.Contract(CONTRACTS.CHEF, CHEF_ABI, state.signer);
+      const tx = await chef.harvest(pid);
+      await tx.wait();
+      addTx("Harvest", `${earned.toFixed(4)} GANG from ${farm.name}`, tx.hash, "ok");
+    } else {
+      await simulateTx(1500);
+      addTx("Harvest", `${earned.toFixed(4)} GANG from ${farm.name}`, "0x"+Math.random().toString(16).slice(2,12), "ok");
+    }
     showToast(`✅ Harvested ${earned.toFixed(4)} GANG!`, "success");
     farm.earned = 0;
     const el = document.getElementById(`earned-${pid}`);
     if (el) el.textContent = "0.0000 GANG";
-    await loadBalances();
   } catch(e) {
     showToast("❌ " + (e?.reason || e?.message || "Harvest failed").slice(0,100), "error");
   }
@@ -2980,13 +2506,25 @@ async function harvestAll() {
   if (!state.address) { connectWallet(); return; }
   const total = FARMS.reduce((s,f) => s + f.earned, 0);
   if (total <= 0) { showToast("Nothing to harvest!", "error"); return; }
-  if (!CONTRACTS.CHEF) { showToast("❌ MasterChef contract not deployed yet. Set CONTRACTS.CHEF to enable harvesting.", "error"); return; }
-  // Use harvest confirm modal with pid=null to indicate "all"
-  _harvestPid = "all";
-  document.getElementById("harvestConfirmAmt").textContent = total.toFixed(4);
-  document.getElementById("harvestConfirmFarm").textContent = "All Farms";
-  document.getElementById("harvestConfirmUSD").textContent = "≈ $" + (total * TOKENS.GANG.price).toFixed(4);
-  document.getElementById("harvestConfirmModal").classList.add("open");
+  const isMock = !CONTRACTS.CHEF;
+  showToast(`⏳ Harvesting all ${total.toFixed(4)} GANG…`, "");
+  try {
+    if (!isMock) {
+      const chef = new ethers.Contract(CONTRACTS.CHEF, CHEF_ABI, state.signer);
+      const pids = FARMS.map(f => f.pid);
+      const tx = await chef.harvestAll(pids);
+      await tx.wait();
+      addTx("Harvest All", `${total.toFixed(4)} GANG`, tx.hash, "ok");
+    } else {
+      await simulateTx(2000);
+      addTx("Harvest All", `${total.toFixed(4)} GANG`, "0x"+Math.random().toString(16).slice(2,12), "ok");
+    }
+    showToast(`✅ Harvested ${total.toFixed(4)} GANG total!`, "success");
+    FARMS.forEach(f => { f.earned = 0; });
+    renderFarms();
+  } catch(e) {
+    showToast("❌ " + (e?.reason || e?.message || "Harvest failed").slice(0,100), "error");
+  }
 }
 
 let _stakeCtx = {};
@@ -3003,12 +2541,9 @@ function openStake(pid, action) {
 
   document.getElementById("stakeConfirmBtn").textContent = action === "stake" ? "CONFIRM STAKE" : "CONFIRM UNSTAKE";
 
-  const balEl = document.getElementById("stakeBalance");
-  if (balEl) {
-    balEl.textContent = action === "stake"
-      ? "LP Balance: " + lpBal.toFixed(4) + " (refreshing…)"
-      : "Staked: " + staked.toFixed(4) + " LP";
-  }
+  document.getElementById("stakeBalance").textContent = action === "stake"
+    ? "LP Balance: " + lpBal.toFixed(4)
+    : "Staked: " + staked.toFixed(4) + " LP";
 
   const approveBtn = document.getElementById("stakeApproveBtn");
   if (approveBtn) {
@@ -3017,82 +2552,6 @@ function openStake(pid, action) {
 
   document.getElementById("stakeAmt").value = "";
   document.getElementById("stakeModal").classList.add("open");
-
-  // Always fetch live LP balance on-chain when opening stake modal
-  if (action === "stake") _refreshStakeLPBalance(pid);
-}
-
-async function _refreshStakeLPBalance(pid) {
-  const farm = FARMS[pid];
-  try {
-    // Resolve LP address from factory if not cached
-    let lpAddr = farm.lpAddr;
-    if (!lpAddr && CONTRACTS.FACTORY && farm.tokens.length >= 2) {
-      const rp = state.provider || getReadProvider();
-      if (rp) {
-        const factory = new ethers.Contract(CONTRACTS.FACTORY, FACTORY_ABI, rp);
-        const tA = TOKENS[farm.tokens[0]];
-        const tB = TOKENS[farm.tokens[1]];
-        const addrA = tA?.address === "native" ? CONTRACTS.WCRO : tA?.address;
-        const addrB = tB?.address === "native" ? CONTRACTS.WCRO : tB?.address;
-        if (addrA && addrB) {
-          const found = await factory.getPair(addrA, addrB);
-          if (found && found !== "0x0000000000000000000000000000000000000000") {
-            lpAddr = found;
-            farm.lpAddr = found; // cache for future use
-          }
-        }
-      }
-    }
-
-    if (!lpAddr || lpAddr === "0x0000000000000000000000000000000000000000") {
-      // No LP pair exists on-chain yet
-      const balEl = document.getElementById("stakeBalance");
-      if (balEl && _stakeCtx.pid === pid) balEl.textContent = "LP Balance: 0.0000 (no pair found — add liquidity first)";
-      state.lpBalances[pid] = 0;
-      return;
-    }
-
-    // Fetch real balance
-    const rp = state.provider || getReadProvider();
-    const lp = new ethers.Contract(lpAddr, ERC20_ABI, rp);
-    const bal = await lp.balanceOf(state.address);
-    const lpBal = parseFloat(ethers.formatUnits(bal, 18));
-    state.lpBalances[pid] = lpBal;
-    if (!state.lpBalances) state.lpBalances = {};
-
-    // Update the modal if still open for this pid
-    if (_stakeCtx.pid === pid) {
-      const balEl = document.getElementById("stakeBalance");
-      if (balEl) balEl.textContent = "LP Balance: " + lpBal.toFixed(6);
-
-      // Show approve button now that we have the address
-      const approveBtn = document.getElementById("stakeApproveBtn");
-      if (approveBtn && CONTRACTS.CHEF) {
-        approveBtn.style.display = "block";
-      }
-
-      // Auto-fill MAX if balance > 0 and input is empty
-      const amtEl = document.getElementById("stakeAmt");
-      if (amtEl && lpBal > 0 && !amtEl.value) {
-        // Don't auto-fill, but update the display element in farm card
-        const lpBalEl = document.getElementById("lpbal-" + pid);
-        if (lpBalEl) lpBalEl.textContent = lpBal.toFixed(6);
-      }
-    }
-
-    // Update farm card display
-    const lpBalEl = document.getElementById("lpbal-" + pid);
-    if (lpBalEl) lpBalEl.textContent = lpBal.toFixed(6);
-
-  } catch(e) {
-    console.warn("_refreshStakeLPBalance:", e);
-    const balEl = document.getElementById("stakeBalance");
-    if (balEl && _stakeCtx.pid === pid) {
-      const cached = state.lpBalances?.[pid] || 0;
-      balEl.textContent = "LP Balance: " + cached.toFixed(6) + (cached === 0 ? " (could not fetch)" : "");
-    }
-  }
 }
 
 function closeStakeModal() { document.getElementById("stakeModal").classList.remove("open"); }
@@ -3120,70 +2579,71 @@ async function approveLP() {
 
 async function confirmStake() {
   const { pid, action } = _stakeCtx;
-  const amt = parseFloat(document.getElementById("stakeAmt").value);
+  const amt    = parseFloat(document.getElementById("stakeAmt").value);
   if (!amt || amt <= 0) { showToast("Enter a valid amount.", "error"); return; }
 
-  const farm   = FARMS[pid];
   const staked = state.stakedAmounts[pid] || 0;
+  const lpBal  = state.lpBalances?.[pid]  || 0;
 
-  // For staking: always do a fresh on-chain LP balance check before validating
-  let lpBal = state.lpBalances?.[pid] || 0;
-  if (action === "stake" && farm.lpAddr) {
-    try {
-      const lp = new ethers.Contract(farm.lpAddr, ERC20_ABI, state.provider);
-      const bal = await lp.balanceOf(state.address);
-      lpBal = parseFloat(ethers.formatUnits(bal, 18));
-      state.lpBalances[pid] = lpBal;
-    } catch(e) { /* use cached value */ }
+  if (action === "stake" && amt > lpBal) {
+    showToast("Amount exceeds your LP balance (" + lpBal.toFixed(4) + " LP).", "error"); return;
   }
-
-  if (action === "stake" && amt > lpBal + 0.000001) {
-    showToast("Amount exceeds your LP balance (" + lpBal.toFixed(6) + " LP).", "error"); return;
-  }
-  if (action === "unstake" && amt > staked + 0.000001) {
-    showToast("Cannot unstake more than staked (" + staked.toFixed(6) + " LP).", "error"); return;
+  if (action === "unstake" && amt > staked) {
+    showToast("Cannot unstake more than staked (" + staked.toFixed(4) + " LP).", "error"); return;
   }
 
   closeStakeModal();
-  if (!CONTRACTS.CHEF) { showToast("❌ MasterChef not deployed yet. Set CONTRACTS.CHEF to enable staking.", "error"); return; }
+  const isMock = !CONTRACTS.CHEF;
+  const label  = action === "stake" ? "Staking" : "Unstaking";
+  showToast("⏳ " + label + " " + amt + " LP tokens…", "");
 
-  const label = action === "stake" ? "Staking" : "Unstaking";
-  showToast("⏳ " + label + " " + amt.toFixed(6) + " LP tokens…", "");
-
-  try {
-    const chef   = new ethers.Contract(CONTRACTS.CHEF, CHEF_ABI, state.signer);
-    const amtBig = ethers.parseUnits(amt.toFixed(18), 18);
-
-    if (action === "stake") {
-      if (farm.lpAddr && farm.lpAddr !== "0x0000000000000000000000000000000000000000") {
-        showToast("⏳ Approving LP token for MasterChef…", "");
-        await approveToken(farm.lpAddr, CONTRACTS.CHEF, amtBig);
+  if (!isMock) {
+    try {
+      const chef  = new ethers.Contract(CONTRACTS.CHEF, CHEF_ABI, state.signer);
+      const farm  = FARMS[pid];
+      const amtBig = ethers.parseUnits(String(amt), 18);
+      if (action === "stake") {
+        if (farm.lpAddr) {
+          showToast("⏳ Approving LP token…", "");
+          await approveToken(farm.lpAddr, CONTRACTS.CHEF, amtBig);
+        }
+        showToast("⏳ Staking LP tokens…", "");
+        const tx = await chef.deposit(pid, amtBig);
+        await tx.wait();
+        addTx("Stake", amt + " LP in " + farm.name, tx.hash, "ok");
+      } else {
+        showToast("⏳ Withdrawing LP tokens…", "");
+        const tx = await chef.withdraw(pid, amtBig);
+        await tx.wait();
+        addTx("Unstake", amt + " LP from " + farm.name, tx.hash, "ok");
       }
-      showToast("⏳ Confirm stake in your wallet…", "");
-      const tx = await chef.deposit(pid, amtBig);
-      showToast("⏳ Stake submitted, awaiting confirmation…", "");
-      await tx.wait();
-      addTx("Stake", amt.toFixed(4) + " LP in " + farm.name, tx.hash, "ok");
-      showToast("✅ Staked " + amt.toFixed(4) + " LP — now earning $GANG!", "success");
-    } else {
-      showToast("⏳ Confirm unstake in your wallet…", "");
-      const tx = await chef.withdraw(pid, amtBig);
-      showToast("⏳ Unstake submitted, awaiting confirmation…", "");
-      await tx.wait();
-      addTx("Unstake", amt.toFixed(4) + " LP from " + farm.name, tx.hash, "ok");
-      showToast("✅ Unstaked " + amt.toFixed(4) + " LP successfully!", "success");
+    } catch(e) {
+      showToast("❌ " + (e?.reason || e?.message || "Tx failed").slice(0, 100), "error");
+      return;
     }
-
-    await loadBalances();
-    const stakedEl = document.getElementById("staked-" + pid);
-    if (stakedEl) stakedEl.textContent = (state.stakedAmounts[pid] || 0).toFixed(6) + " LP";
-    const lpBalEl = document.getElementById("lpbal-" + pid);
-    if (lpBalEl) lpBalEl.textContent = (state.lpBalances?.[pid] || 0).toFixed(6);
-
-  } catch(e) {
-    const msg = e?.reason || e?.info?.error?.message || e?.message || "Transaction failed";
-    showToast("❌ " + msg.slice(0, 120), "error");
+  } else {
+    await simulateTx(2000);
+    const farm = FARMS[pid];
+    addTx(action === "stake" ? "Stake" : "Unstake", amt + " LP in " + farm.name, "0x" + Math.random().toString(16).slice(2, 12), "ok");
   }
+
+  // Update state
+  if (!state.lpBalances) state.lpBalances = {};
+  if (action === "stake") {
+    state.stakedAmounts[pid] = staked + amt;
+    state.lpBalances[pid]    = Math.max(0, lpBal - amt);
+  } else {
+    state.stakedAmounts[pid] = Math.max(0, staked - amt);
+    state.lpBalances[pid]    = lpBal + amt;
+  }
+
+  // Update UI
+  const stakedEl = document.getElementById("staked-" + pid);
+  if (stakedEl) stakedEl.textContent = state.stakedAmounts[pid].toFixed(4) + " LP";
+  const lpBalEl = document.getElementById("lpbal-" + pid);
+  if (lpBalEl) lpBalEl.textContent = state.lpBalances[pid].toFixed(4);
+
+  showToast("✅ Successfully " + (action === "stake" ? "staked" : "unstaked") + " " + amt + " LP!", "success");
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -3284,24 +2744,13 @@ function renderTxList() {
 }
 
 async function approveToken(tokenAddr, spender, amount) {
-  // Native CRO never needs ERC-20 approval
-  if (!tokenAddr || tokenAddr === "native" || tokenAddr === CONTRACTS.WCRO) return;
-  if (!state.signer) throw new Error("Wallet not connected");
-  try {
-    const contract = new ethers.Contract(tokenAddr, ERC20_ABI, state.signer);
-    const allowance = await contract.allowance(state.address, spender);
-    if (BigInt(allowance) < BigInt(amount)) {
-      showToast("⏳ Approving token — confirm in wallet…", "");
-      const tx = await contract.approve(spender, ethers.MaxUint256);
-      showToast("⏳ Approval submitted, awaiting confirmation…", "");
-      await tx.wait();
-    }
-  } catch(e) {
-    const msg = e?.reason || e?.info?.error?.message || e?.message || "Approval failed";
-    if (msg.includes("rejected") || msg.includes("denied") || msg.includes("user rejected")) {
-      throw new Error("Approval rejected by user");
-    }
-    throw new Error("Approval failed: " + msg.slice(0, 80));
+  const contract = new ethers.Contract(tokenAddr, ERC20_ABI, state.signer);
+  const allowance = await contract.allowance(state.address, spender);
+  // ethers v6: allowance and amount are BigInt — use BigInt comparison
+  if (BigInt(allowance) < BigInt(amount)) {
+    showToast("⏳ Approving token…", "");
+    const tx = await contract.approve(spender, ethers.MaxUint256);
+    await tx.wait();
   }
 }
 
@@ -3316,25 +2765,21 @@ function setMax(inputId) {
     input.value = (state.balances[sym] || 0).toFixed(6);
     calcLiqRatio();
   } else if (inputId === "removeLPAmt") {
-    const symA = document.getElementById("liqTokenA")?.value || "CRO";
-    const symB = document.getElementById("liqTokenB")?.value || "GANG";
-    const matchFarm = FARMS.find(f => f.tokens.includes(symA) && f.tokens.includes(symB));
-    const lpBal = matchFarm ? (state.lpBalances?.[matchFarm.pid] || 0) : 0;
-    input.value = lpBal.toFixed(6);
+    input.value = (state._mockLPBalance || 0).toFixed(6);
     calcRemoveLiq();
   } else if (inputId === "stakeAmt") {
     const { pid, action } = _stakeCtx;
     if (action === "unstake") {
       input.value = (state.stakedAmounts[pid] || 0).toFixed(6);
     } else {
-      // Use the most up-to-date LP balance (refreshed by _refreshStakeLPBalance when modal opened)
-      const lpBal = state.lpBalances?.[pid] || 0;
-      input.value = lpBal.toFixed(6);
-      if (lpBal <= 0) showToast("LP balance is still loading or is zero — wait a moment.", "");
+      input.value = (state.lpBalances?.[pid] || 0).toFixed(6);
     }
   }
 }
 
+function simulateTx(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
 
 let _toastTimer;
 function showToast(msg, type) {
@@ -3345,54 +2790,7 @@ function showToast(msg, type) {
   _toastTimer = setTimeout(() => { el.className = ""; }, 4000);
 }
 
-function closeTokenModal() {
-  document.getElementById("tokenModal").classList.remove("open");
-  _tokenTarget = null;
-}
-
-let _tokenTarget = null; // which select is being populated: 'tokenFrom'|'tokenTo'|'liqTokenA'|'liqTokenB'
-
-function openTokenModal(targetSelectId) {
-  _tokenTarget = targetSelectId;
-  document.getElementById("tokenSearch").value = "";
-  filterTokens("");
-  document.getElementById("tokenModal").classList.add("open");
-}
-
-function filterTokens(query) {
-  const q = (query || "").toLowerCase().trim();
-  const list = document.getElementById("tokenList");
-  if (!list) return;
-  const entries = Object.values(TOKENS).filter(tok =>
-    !q || tok.symbol.toLowerCase().includes(q) || tok.name.toLowerCase().includes(q) || tok.address.toLowerCase().includes(q)
-  );
-  list.innerHTML = entries.map(tok => `
-    <div class="token-option" onclick="selectToken('${tok.symbol}')">
-      <span class="token-option-icon">${tok.icon}</span>
-      <div>
-        <div class="token-option-name">${tok.symbol}</div>
-        <div class="token-option-full">${tok.name}</div>
-      </div>
-      <div style="margin-left:auto;text-align:right">
-        <div style="font-family:'Space Mono',monospace;font-size:12px;color:var(--gold)">$${tok.price >= 1000 ? tok.price.toLocaleString('en-US',{maximumFractionDigits:0}) : tok.price >= 1 ? tok.price.toFixed(2) : tok.price.toFixed(4)}</div>
-        ${state.balances[tok.symbol] !== undefined ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">${state.balances[tok.symbol].toFixed(4)}</div>` : ''}
-      </div>
-    </div>
-  `).join("") || `<div style="color:var(--muted);text-align:center;padding:20px">No tokens found</div>`;
-}
-
-function selectToken(symbol) {
-  if (!_tokenTarget) { closeTokenModal(); return; }
-  const el = document.getElementById(_tokenTarget);
-  if (el) el.value = symbol;
-  closeTokenModal();
-  // Trigger recalculation based on which select was changed
-  if (_tokenTarget === 'tokenFrom' || _tokenTarget === 'tokenTo') {
-    calcSwap(); updateSwapBalances(); updateSwapPriceBadges();
-  } else if (_tokenTarget === 'liqTokenA' || _tokenTarget === 'liqTokenB') {
-    calcLiqRatio(); updateBalanceDisplays(); updateLiqPriceCards();
-  }
-}
+function closeTokenModal() { document.getElementById("tokenModal").classList.remove("open"); }
 
 
 // ── $GANG Token Page ──────────────────────────────────────────
@@ -3609,7 +3007,7 @@ function openFarmLiq(pid, action) {
         <div class="info-row"><span>Pool Share</span><span class="info-val" id="farmLiqShare">—</span></div>
       </div>
 
-      <button class="btn-primary" onclick="reviewFarmLiq('add')" style="background:linear-gradient(135deg,var(--green),#1e8449)">✅ REVIEW ADD LIQUIDITY</button>
+      <button class="btn-primary" onclick="doFarmLiq('add')" style="background:linear-gradient(135deg,var(--green),#1e8449)">✅ CONFIRM ADD LIQUIDITY</button>
     `;
   } else {
     document.getElementById("farmLiqBody").innerHTML = `
@@ -3647,7 +3045,7 @@ function openFarmLiq(pid, action) {
         ${symB !== symA ? `<div class="info-row"><span>${symB}</span><span class="info-val" id="farmWithdrawB">—</span></div>` : ""}
       </div>
 
-      <button class="btn-primary" onclick="reviewFarmLiq('remove')" style="background:linear-gradient(135deg,var(--red),#922b21)">🔓 REVIEW WITHDRAW LIQUIDITY</button>
+      <button class="btn-primary" onclick="doFarmLiq('remove')" style="background:linear-gradient(135deg,var(--red),#922b21)">🔓 CONFIRM WITHDRAW LIQUIDITY</button>
     `;
   }
 
@@ -3687,9 +3085,8 @@ function calcFarmLiqRatio() {
 function setFarmWithdrawPct(pct) {
   const { pid } = _farmLiqCtx;
   const lpBal = state.lpBalances?.[pid] || 0;
-  const p = Number(pct);
-  const amt = p >= 100 ? lpBal : Math.min(lpBal * p / 100, lpBal);
-  const el = document.getElementById("farmWithdrawAmt");
+  const amt   = lpBal * pct / 100;
+  const el    = document.getElementById("farmWithdrawAmt");
   if (el) { el.value = amt.toFixed(6); calcFarmWithdraw(); }
 }
 
@@ -3698,18 +3095,14 @@ function calcFarmWithdraw() {
   const farm   = FARMS[pid];
   const symA   = farm.tokens[0];
   const symB   = farm.tokens[1] || farm.tokens[0];
-  const lpBal  = state.lpBalances?.[pid] || 0;
-  const raw    = parseFloat(document.getElementById("farmWithdrawAmt")?.value) || 0;
-  const amt    = lpBal > 0 ? Math.min(raw, lpBal) : raw;
+  const lpBal  = state.lpBalances?.[pid] || 1;
+  const amt    = parseFloat(document.getElementById("farmWithdrawAmt")?.value) || 0;
   const slider = document.getElementById("farmWithdrawSlider");
-  if (slider) slider.value = lpBal > 0 ? Math.min(100, (amt / lpBal) * 100) : 0;
+  if (slider) slider.value = Math.min(100, (amt / lpBal) * 100);
   const elA = document.getElementById("farmWithdrawA");
   const elB = document.getElementById("farmWithdrawB");
-  // Estimate received tokens using price ratio (actual amounts determined on-chain)
-  const priceA = TOKENS[symA]?.price || 1;
-  const priceB = TOKENS[symB]?.price || 1;
-  if (elA) elA.textContent = amt > 0 ? "~" + ((amt * priceB / priceA) / 2).toFixed(4) + " " + symA : "—";
-  if (elB) elB.textContent = amt > 0 ? "~" + ((amt * priceA / priceB) / 2).toFixed(4) + " " + symB : "—";
+  if (elA) elA.textContent = (amt * 1000).toFixed(2) + " " + symA;
+  if (elB) elB.textContent = (amt * 40000).toFixed(2) + " " + symB;
 }
 
 async function farmApproveLiq(side) {
@@ -3723,14 +3116,13 @@ async function farmApproveLiq(side) {
   const orig  = btn.innerHTML;
   btn.innerHTML = "⏳ Approving…"; btn.disabled = true;
   try {
-    if (!state.signer) { showToast("Connect your wallet first.", "error"); btn.innerHTML = orig; btn.disabled = false; return; }
-    if (TOKENS[sym]?.address !== "native") {
+    if (CONTRACTS.ROUTER && state.signer && TOKENS[sym]?.address !== "native") {
       const contract = new ethers.Contract(TOKENS[sym].address, ERC20_ABI, state.signer);
       const tx = await contract.approve(CONTRACTS.ROUTER, ethers.MaxUint256);
-      showToast("⏳ Approval submitted, waiting for confirmation…", "");
       await tx.wait();
+    } else {
+      await simulateTx(1500);
     }
-    // native CRO needs no approval
     showToast("✅ " + sym + " approved!", "success");
     btn.innerHTML = "✅ " + sym + " APPROVED";
     btn.style.color = "var(--green)"; btn.style.borderColor = "var(--green)";
@@ -3745,70 +3137,6 @@ async function farmApproveLiq(side) {
   }
 }
 
-function closeLiqConfirmModal() {
-  document.getElementById("liqConfirmModal").classList.remove("open");
-}
-
-function reviewFarmLiq(action) {
-  const { pid } = _farmLiqCtx;
-  const farm = FARMS[pid];
-  const symA = farm.tokens[0];
-  const symB = farm.tokens[1] || farm.tokens[0];
-
-  if (action === "add") {
-    const aAmt = parseFloat(document.getElementById("farmLiqAmtA")?.value);
-    const bAmt = parseFloat(document.getElementById("farmLiqAmtB")?.value) || aAmt;
-    if (!aAmt || aAmt <= 0) { showToast("Enter an amount first.", "error"); return; }
-    const usdA = aAmt * (TOKENS[symA]?.price || 0);
-    const usdB = bAmt * (TOKENS[symB]?.price || 0);
-    document.getElementById("liqConfirmTitle").textContent = "Confirm Add Liquidity";
-    document.getElementById("liqConfirmBody").innerHTML = `
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
-        <div class="confirm-token-row">
-          <span style="font-size:22px">${TOKENS[symA]?.icon||"🪙"}</span>
-          <span class="confirm-token-amt">${aAmt}</span>
-          <span class="confirm-token-sym">${symA}</span>
-          <span class="confirm-token-usd">≈ $${usdA.toFixed(2)}</span>
-        </div>
-        <div class="confirm-arrow">+</div>
-        <div class="confirm-token-row">
-          <span style="font-size:22px">${TOKENS[symB]?.icon||"🪙"}</span>
-          <span class="confirm-token-amt">${bAmt.toFixed(6)}</span>
-          <span class="confirm-token-sym">${symB}</span>
-          <span class="confirm-token-usd">≈ $${usdB.toFixed(2)}</span>
-        </div>
-      </div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px">
-        <div class="confirm-row"><span class="confirm-row-label">Farm</span><span class="confirm-row-val">${farm.name}</span></div>
-        <div class="confirm-row"><span class="confirm-row-label">Total Value</span><span class="confirm-row-val">≈ $${(usdA+usdB).toFixed(2)}</span></div>
-        <div class="confirm-row"><span class="confirm-row-label">Slippage</span><span class="confirm-row-val">${state.slippage}%</span></div>
-      </div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">
-        ⚠️ Your wallet will ask you to approve tokens and confirm this transaction. Gas fees apply.
-      </div>
-      <button class="btn-primary" onclick="closeLiqConfirmModal();doFarmLiq('add')" style="background:linear-gradient(135deg,var(--green),#1e8449)">✅ CONFIRM ADD LIQUIDITY</button>
-    `;
-  } else {
-    const lpAmt = parseFloat(document.getElementById("farmWithdrawAmt")?.value);
-    if (!lpAmt || lpAmt <= 0) { showToast("Enter LP amount to withdraw.", "error"); return; }
-    const recvA = document.getElementById("farmWithdrawA")?.textContent || "—";
-    const recvB = document.getElementById("farmWithdrawB")?.textContent || "—";
-    document.getElementById("liqConfirmTitle").textContent = "Confirm Withdraw LP";
-    document.getElementById("liqConfirmBody").innerHTML = `
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
-        <div class="confirm-row"><span class="confirm-row-label">Farm</span><span class="confirm-row-val">${farm.name}</span></div>
-        <div class="confirm-row"><span class="confirm-row-label">LP to Withdraw</span><span class="confirm-row-val">${lpAmt.toFixed(6)} LP</span></div>
-        <div class="confirm-row"><span class="confirm-row-label">You'll receive ~</span><span class="confirm-row-val">${recvA} + ${recvB}</span></div>
-      </div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">
-        ⚠️ Your wallet will ask you to approve the LP token removal. Gas fees apply.
-      </div>
-      <button class="btn-primary" onclick="closeLiqConfirmModal();doFarmLiq('remove')" style="background:linear-gradient(135deg,var(--red),#922b21)">🔓 CONFIRM WITHDRAW</button>
-    `;
-  }
-  document.getElementById("liqConfirmModal").classList.add("open");
-}
-
 async function doFarmLiq(action) {
   const { pid } = _farmLiqCtx;
   const farm = FARMS[pid];
@@ -3821,99 +3149,52 @@ async function doFarmLiq(action) {
     const aAmt = parseFloat(document.getElementById("farmLiqAmtA")?.value);
     const bAmt = parseFloat(document.getElementById("farmLiqAmtB")?.value) || aAmt;
     if (!aAmt || aAmt <= 0) { showToast("Enter an amount.", "error"); return; }
-    if (!CONTRACTS.ROUTER) { showToast("❌ Router contract not configured.", "error"); return; }
 
     closeFarmLiqModal();
-    const tokenA = TOKENS[symA];
-    const tokenB = TOKENS[symB];
-    const deadline = Math.floor(Date.now() / 1000) + 600;
-    const router = new ethers.Contract(CONTRACTS.ROUTER, ROUTER_ABI, state.signer);
-    const amtA = ethers.parseUnits(String(aAmt), tokenA.decimals);
-    const amtB = ethers.parseUnits(String(bAmt), tokenB.decimals);
-    const minA = amtA * BigInt(Math.floor((1 - state.slippage/100) * 1000)) / 1000n;
-    const minB = amtB * BigInt(Math.floor((1 - state.slippage/100) * 1000)) / 1000n;
-    try {
-      let tx;
-      if (symA === "CRO") {
-        showToast("⏳ Approving " + symB + "…", "");
-        await approveToken(tokenB.address, CONTRACTS.ROUTER, amtB);
-        showToast("⏳ Confirm add liquidity in your wallet…", "");
-        tx = await router.addLiquidityETH(tokenB.address, amtB, minB, minA, state.address, deadline, { value: amtA });
-      } else if (symB === "CRO") {
-        showToast("⏳ Approving " + symA + "…", "");
-        await approveToken(tokenA.address, CONTRACTS.ROUTER, amtA);
-        showToast("⏳ Confirm add liquidity in your wallet…", "");
-        tx = await router.addLiquidityETH(tokenA.address, amtA, minA, minB, state.address, deadline, { value: amtB });
-      } else {
-        showToast("⏳ Approving " + symA + "…", "");
-        await approveToken(tokenA.address, CONTRACTS.ROUTER, amtA);
-        showToast("⏳ Approving " + symB + "…", "");
-        await approveToken(tokenB.address, CONTRACTS.ROUTER, amtB);
-        showToast("⏳ Confirm add liquidity in your wallet…", "");
-        tx = await router.addLiquidity(tokenA.address, tokenB.address, amtA, amtB, minA, minB, state.address, deadline);
-      }
-      showToast("⏳ Transaction submitted, waiting for confirmation…", "");
-      const receipt = await tx.wait();
-      addTx("Add LP", `${aAmt} ${symA} + ${bAmt.toFixed(4)} ${symB}`, receipt.hash, "ok");
-      showToast("✅ Liquidity added to " + farm.name + "!", "success");
-      await loadBalances();
-      const lpBalEl = document.getElementById("lpbal-" + pid);
-      if (lpBalEl) lpBalEl.textContent = (state.lpBalances?.[pid] || 0).toFixed(4);
-    } catch(e) {
-      showToast("❌ " + ((e?.reason || e?.message) || "Failed").slice(0,100), "error");
-    }
+    showToast("⏳ Adding liquidity to " + farm.name + "…", "");
+    await simulateTx(2000);
+
+    const lpReceived = aAmt * 0.0024;
+    if (!state.lpBalances) state.lpBalances = {};
+    state.lpBalances[pid] = (state.lpBalances[pid] || 0) + lpReceived;
+    state._mockLPBalance  = (state._mockLPBalance || 0) + lpReceived;
+
+    addTx("Add LP", `${aAmt} ${symA} + ${bAmt.toFixed(4)} ${symB}`, "0x" + Math.random().toString(16).slice(2, 12), "ok");
+    showToast("✅ Liquidity added to " + farm.name + "! Got ~" + lpReceived.toFixed(4) + " LP", "success");
+
+    const lpBalEl = document.getElementById("lpbal-" + pid);
+    if (lpBalEl) lpBalEl.textContent = state.lpBalances[pid].toFixed(4);
+
+    // Update positions card
+    const posEl = document.getElementById("positionsContent");
+    if (posEl) posEl.innerHTML = `
+      <div class="positions-list">
+        <div class="position-row">
+          <div>
+            <div class="position-name">${TOKENS[symA]?.icon||""} ${symA} / ${TOKENS[symB]?.icon||""} ${symB}</div>
+            <div class="position-sub">LP Balance: ${state.lpBalances[pid].toFixed(4)} · Your share: 0.01%</div>
+          </div>
+          <div class="position-value">$${(aAmt*(TOKENS[symA]?.price||1)*2).toFixed(2)}</div>
+        </div>
+      </div>`;
   } else {
-    const _rawLP = parseFloat(document.getElementById("farmWithdrawAmt")?.value);
-    if (!_rawLP || _rawLP <= 0) { showToast("Enter LP amount to withdraw.", "error"); return; }
+    const lpAmt = parseFloat(document.getElementById("farmWithdrawAmt")?.value);
+    if (!lpAmt || lpAmt <= 0) { showToast("Enter LP amount to withdraw.", "error"); return; }
     const lpBal = state.lpBalances?.[pid] || 0;
-    const lpAmt = Math.min(_rawLP, lpBal);
-    if (lpAmt <= 0) { showToast("No LP balance to withdraw.", "error"); return; }
-    if (!CONTRACTS.ROUTER) { showToast("❌ Router contract not configured.", "error"); return; }
-
-    // Resolve LP token address
-    let lpAddr = farm.lpAddr;
-    if (!lpAddr) {
-      try {
-        const factory = new ethers.Contract(CONTRACTS.FACTORY, FACTORY_ABI, state.provider);
-        const addrA = TOKENS[symA]?.address === "native" ? CONTRACTS.WCRO : TOKENS[symA]?.address;
-        const addrB = TOKENS[symB]?.address === "native" ? CONTRACTS.WCRO : TOKENS[symB]?.address;
-        lpAddr = await factory.getPair(addrA, addrB);
-      } catch(e) { showToast("❌ Could not find LP pair address.", "error"); return; }
-    }
-    if (!lpAddr || lpAddr === "0x0000000000000000000000000000000000000000") {
-      showToast("❌ No LP pair found for " + symA + "/" + symB + ". Please fill in lpAddr in FARMS config.", "error"); return;
-    }
+    if (lpAmt > lpBal) { showToast("Amount exceeds LP balance (" + lpBal.toFixed(4) + " LP).", "error"); return; }
 
     closeFarmLiqModal();
-    try {
-      const lpContract = new ethers.Contract(lpAddr, ERC20_ABI, state.signer);
-      const lpAmtBig = ethers.parseUnits(lpAmt.toFixed(18), 18);
-      const deadline = Math.floor(Date.now() / 1000) + 600;
-      const router = new ethers.Contract(CONTRACTS.ROUTER, ROUTER_ABI, state.signer);
+    showToast("⏳ Withdrawing liquidity from " + farm.name + "…", "");
+    await simulateTx(2000);
 
-      showToast("⏳ Approving LP token for Router…", "");
-      const approveTx = await lpContract.approve(CONTRACTS.ROUTER, lpAmtBig);
-      await approveTx.wait();
+    state.lpBalances[pid] = Math.max(0, lpBal - lpAmt);
+    state._mockLPBalance  = Math.max(0, (state._mockLPBalance || 0) - lpAmt);
 
-      showToast("⏳ Confirm withdraw in your wallet…", "");
-      let tx;
-      if (symA === "CRO" || symB === "CRO") {
-        const tokenAddr = symA === "CRO" ? TOKENS[symB].address : TOKENS[symA].address;
-        tx = await router.removeLiquidityETH(tokenAddr, lpAmtBig, 0n, 0n, state.address, deadline);
-      } else {
-        tx = await router.removeLiquidity(TOKENS[symA].address, TOKENS[symB].address, lpAmtBig, 0n, 0n, state.address, deadline);
-      }
+    addTx("Remove LP", `${lpAmt.toFixed(4)} LP from ${farm.name}`, "0x" + Math.random().toString(16).slice(2, 12), "ok");
+    showToast("✅ Liquidity withdrawn from " + farm.name + "!", "success");
 
-      showToast("⏳ Transaction submitted, waiting for confirmation…", "");
-      const receipt = await tx.wait();
-      addTx("Remove LP", `${lpAmt.toFixed(4)} LP from ${farm.name}`, receipt.hash, "ok");
-      showToast("✅ Liquidity withdrawn from " + farm.name + "!", "success");
-      await loadBalances();
-      const lpBalEl = document.getElementById("lpbal-" + pid);
-      if (lpBalEl) lpBalEl.textContent = (state.lpBalances?.[pid] || 0).toFixed(4);
-    } catch(e) {
-      showToast("❌ " + ((e?.reason || e?.message) || "Withdraw failed").slice(0,100), "error");
-    }
+    const lpBalEl = document.getElementById("lpbal-" + pid);
+    if (lpBalEl) lpBalEl.textContent = state.lpBalances[pid].toFixed(4);
   }
 }
 
@@ -3924,11 +3205,30 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
   });
 });
 
-// Sync live price to token page if open (backed by real CoinGecko data via fetchLivePrices)
+// Sync live price to token page if open
 setInterval(() => {
   const el = document.getElementById('gangTokenPrice');
   if (el) el.textContent = `$${TOKENS.GANG.price.toFixed(4)}`;
-}, 15000);
+  const te = document.getElementById("treasuryEarnedDisplay");
+  if (te) te.textContent = `$${(state.treasuryEarned || 0).toFixed(4)}`;
+}, 4000);
+
+
+
+// Mock live price ticker
+setInterval(() => {
+  TOKENS.GANG.price *= 1 + (Math.random() - 0.5) * 0.002;
+  document.getElementById("statPrice").textContent = `$${TOKENS.GANG.price.toFixed(4)}`;
+  updateTickerPrices();
+  updateSwapPriceBadges();
+  updateLiqPriceCards();
+}, 4000);
+
+// Mock TVL ticker
+setInterval(() => {
+  const tvl = 4.2 + (Math.random() - 0.5) * 0.1;
+  document.getElementById("statTVL").textContent = `$${tvl.toFixed(1)}M`;
+}, 7000);
 </script>
 </body>
 </html>
